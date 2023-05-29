@@ -74,20 +74,6 @@ const userSchema = new mongoose.Schema({
     default:0
   }
 
-  /* from the figma file
-  user:[
-    {‘name’: ‘John’},
-    {‘email’:’john@me.com’},
-    {‘password’: ‘test1’},
-    {‘avatar’: ‘/pathToSvg.svg’},
-    {‘badges’: [‘badge1’, ‘badge2’]},
-    {‘history’: [
-    {‘quizname’:’quiz1’, ‘score’:4, ‘timestamp’:’2023-05-05’},
-    {‘quizname’:’quiz2’, ‘score’:4, ‘timestamp’:’2023-05-06’},
-    ]},
-    {‘totalScore’:100}*/
-
-
 });
 
 const User = mongoose.model("User", userSchema);
