@@ -1,5 +1,5 @@
 {
-  "name": "express-api-starter",
+  "name": "project-auth-backend",
   "version": "1.0.0",
   "description": "Starter project to get up and running with express quickly",
   "scripts": {
@@ -12,8 +12,14 @@
     "@babel/core": "^7.17.9",
     "@babel/node": "^7.16.8",
     "@babel/preset-env": "^7.16.11",
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "express": "^4.17.3",
-    "nodemon": "^2.0.15"
+    "express-list-endpoints": "^6.0.0",
+    "mongodb": "^5.5.0",
+    "mongoose": "^6.3.0",
+    "nodemon": "^2.0.15",
+    "validator": "^13.9.0"
   }
 }
