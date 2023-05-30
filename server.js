@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import validator from 'validator';
+require('dotenv').config()
 
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project";
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -16,6 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const listEndpoints = require('express-list-endpoints');
+const API_KEY = process.env.API_KEY
 
 // Routes
 app.get("/", (req, res) => {
@@ -76,13 +78,21 @@ const userSchema = new mongoose.Schema({
 
 });
 
+const gameSchema = new mongoose.Schema({
+newgeneratedText:{
+  type:String
+},
+ previouslyGeneratedTexts:{
+  type: Array
+ }
+});
+
 const User = mongoose.model("User", userSchema);
+const Game = mongoose.model("Game", gameSchema);
 
 // register user and login requests
 app.post("/register", async (req, res) => {
   const { username, password, email } = req.body;
-
-
    try {
        // Perform password validation
     if (!validator.isStrongPassword(password)) {
@@ -276,7 +286,28 @@ const updateFields = {
   }
 });
 
-
+app.post("/completions",async(req, res)=>{
+  const options={
+    method: 'POST',
+    headers:{
+      'Authorization': `Bearer ${API_KEY}`,
+      'Content-TYpe':'application/json'
+    },
+    body: JSON.stringify({
+      model:'text-davinci-003',
+      prompt:"Tell a story about a dog",
+      max_tokens: 100,
+    })
+  }
+  try{
+const response = await fetch('https://api.openai.com/v1/completions', options)
+const data = await response.json()
+res.send(data)
+console.log(data)
+  }catch(error){
+    console.error(error)
+  }
+})
 
 // Start the server
 app.listen(port, () => {
