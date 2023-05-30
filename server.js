@@ -75,16 +75,27 @@ const userSchema = new mongoose.Schema({
     type:Number,
     default:0
   }
-
 });
 
 const gameSchema = new mongoose.Schema({
-newgeneratedText:{
+newGeneratedText:{
   type:String
 },
- previouslyGeneratedTexts:{
-  type: Array
- }
+ mainCharacter:{
+  type:String
+ },
+location:{
+  type:String
+},
+friends:{
+  type:Array
+},
+genre:{
+  type:String
+},
+userId:{
+  type:String
+}
 });
 
 const User = mongoose.model("User", userSchema);
@@ -164,7 +175,6 @@ else {
   }
 });
 
-
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -241,16 +251,33 @@ res.status(200).json({success: true, response: user})
  
 });
 
+// Get all users and their total scores
+app.get("/users",authenticateUser);
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({}, "username totalScore avatar _id"); // Retrieve only these fields from the users
+    const usersData = users.map((user) => ({
+      username: user.username,
+      avatar: user.avatar,
+      id: user._id,
+      totalScore: user.totalScore
+    }));
+    res.status(200).json({ success: true, response: usersData });
+  } catch (error) {
+    res.status(500).json({ success: false, response: "Internal server error." });
+  }
+});
+
+
 //updating total score, history, badges, avatar
 app.patch("/user",authenticateUser);
 app.patch("/user", async (req, res) => {
+const salt = bcrypt.genSaltSync();
  try {
-const { totalScoreIncrement, badges, avatar, history } = req.body;
+const { totalScoreIncrement, badges, avatar, history, username, password } = req.body;
     const accessToken = req.header("Authorization");
 
-const updateFields = {
-  // add username and password -> stretch goal
-};
+const updateFields = {};
  if (history || totalScoreIncrement) {
       updateFields.$push = {};
       if (history) {
@@ -267,7 +294,22 @@ const updateFields = {
       updateFields.$push.badges = { $each: [badges] };
   }
   if(avatar){
+     if (!updateFields.$set) {
+        updateFields.$set = {};
+      }
       updateFields.$set= { avatar: avatar }
+  }
+    if(username){
+       if (!updateFields.$set) {
+        updateFields.$set = {};
+      }
+      updateFields.$set= { username: username }
+  }
+      if(password){
+         if (!updateFields.$set) {
+        updateFields.$set = {};
+      }
+      updateFields.$set= { password: bcrypt.hashSync(password, salt) }
   }
 
     const user = await User.findOneAndUpdate(
@@ -286,28 +328,71 @@ const updateFields = {
   }
 });
 
+//Generating story by OPEN AI:
+app.post("/completions",authenticateUser);
 app.post("/completions",async(req, res)=>{
+    const { mainCharacter, location, friends, genre } = req.body;
   const options={
     method: 'POST',
     headers:{
       'Authorization': `Bearer ${API_KEY}`,
-      'Content-TYpe':'application/json'
+      'Content-Type':'application/json'
     },
     body: JSON.stringify({
       model:'text-davinci-003',
-      prompt:"Tell a story about a dog",
-      max_tokens: 100,
+      prompt:`Tell a story in 20 words about a ${mainCharacter} who lived in ${location} together with his or her friends. His or her friends are: ${friends.toString()}. The genre is ${genre}. Give all characters names and different genders. Include a life lesson and make it funny.`,
+      max_tokens: 100
     })
   }
   try{
-const response = await fetch('https://api.openai.com/v1/completions', options)
-const data = await response.json()
-res.send(data)
-console.log(data)
+ const response = await fetch('https://api.openai.com/v1/completions', options)
+    const newText = await response.json()
+  if(newText){
+  const accessToken = req.header("Authorization");
+  const user = await User.findOne({ accessToken: accessToken })
+    console.log('newText:',newText.choices[0].text, newText)
+    const newGame = await new Game ({
+    mainCharacter: mainCharacter,
+    location: location,
+    friends:friends,
+    genre:genre,
+    newGeneratedText:newText.choices[0].text,
+    userId:user._id,
+    }).save();
+ res.status(200).json({
+      success:true,
+      response:{
+        mainCharacter: newGame.mainCharacter,
+        location: newGame.location,
+        storyId: newGame._id,
+        userId:newGame.userId,
+        newGeneratedText:newText.choices[0].text.trim()
+      }
+    })
+        }
   }catch(error){
     console.error(error)
   }
 })
+
+//Delete user account
+app.delete("/user",authenticateUser);
+app.delete("/user", async (req, res) => {
+ try {
+    const accessToken = req.header("Authorization");
+    const deletedUser = await User.deleteOne(
+      { accessToken: accessToken },
+    );
+    if (deletedUser) {
+      res.status(200).json({ success: true, response: 'Your account was successfully deleted!' });
+    } else {
+      res.status(404).json({ success: false, response: "User not found." });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, response: error });
+  }
+});
+
 
 // Start the server
 app.listen(port, () => {
