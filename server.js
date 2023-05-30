@@ -14,11 +14,7 @@ const port = process.env.PORT || 8080;
 const app = express();
 
 // Add middlewares to enable cors and json body parsing
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 const listEndpoints = require('express-list-endpoints');
 const API_KEY = process.env.API_KEY
@@ -92,7 +88,7 @@ location:{
   type:String
 },
 friends:{
-  type:Array
+  type:String
 },
 genre:{
   type:String
@@ -344,7 +340,7 @@ app.post("/completions",async(req, res)=>{
     },
     body: JSON.stringify({
       model:'text-davinci-003',
-      prompt:`Tell a story in 20 words about a ${mainCharacter} who lived in ${location} together with his or her friends. His or her friends are: ${friends.toString()}. The genre is ${genre}. Give all characters names and different genders. Include a life lesson and make it funny.`,
+      prompt:`Tell a story in 20 words about a ${mainCharacter} who lived in ${location} together with his or her friends. His or her friends are: ${friends}. The genre is ${genre}. Give all characters names and different genders. Include a life lesson and make it funny.`,
       max_tokens: 100
     })
   }
