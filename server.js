@@ -356,7 +356,7 @@ app.post("/completions",async(req, res)=>{
     location: location,
     friends:friends,
     genre:genre,
-    newGeneratedText:newText.choices[0].text,
+    newGeneratedText:newText.choices[0].text.trim(),
     userId:user._id,
     }).save();
  res.status(200).json({
@@ -364,6 +364,7 @@ app.post("/completions",async(req, res)=>{
       response:{
         mainCharacter: newGame.mainCharacter,
         location: newGame.location,
+        friends:newGame.friends,
         storyId: newGame._id,
         userId:newGame.userId,
         newGeneratedText:newText.choices[0].text.trim()
