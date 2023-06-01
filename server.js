@@ -95,7 +95,14 @@ genre:{
 },
 userId:{
   type:String
-}
+},
+image:{
+  type:String
+},
+createdAt:{
+  type:Date,
+  default:Date.now()
+ }
 });
 
 const User = mongoose.model("User", userSchema);
@@ -255,7 +262,11 @@ res.status(200).json({success: true, response: user})
 app.get("/users",authenticateUser);
 app.get("/users", async (req, res) => {
   try {
-    const users = await User.find({}, "username totalScore avatar _id"); // Retrieve only these fields from the users
+const limit = parseInt(req.query.limit) || 10; // default limit is 10
+    const users = await User.find({}, "username totalScore avatar _id")
+      .sort({ totalScore: -1 }) // Sort by createdAt field in descending order
+      .limit(limit);
+
     const usersData = users.map((user) => ({
       username: user.username,
       avatar: user.avatar,
@@ -274,17 +285,15 @@ app.patch("/user",authenticateUser);
 app.patch("/user", async (req, res) => {
 const salt = bcrypt.genSaltSync();
  try {
-const { totalScoreIncrement, badges, avatar, history, username, password } = req.body;
+const {badges, avatar, history, username, password } = req.body;
     const accessToken = req.header("Authorization");
 
 const updateFields = {};
- if (history || totalScoreIncrement) {
+ if (history) {
       updateFields.$push = {};
       if (history) {
         updateFields.$push.history = { $each: [history] };
-      }
-      if (totalScoreIncrement) {
-        updateFields.$inc = { totalScore: parseInt(totalScoreIncrement) };
+        updateFields.$inc = {totalScore: parseInt(history.score)}
       }
   }
   if (badges) {
@@ -332,6 +341,7 @@ const updateFields = {};
 app.post("/completions",authenticateUser);
 app.post("/completions",async(req, res)=>{
     const { mainCharacter, location, friends, genre } = req.body;
+// generate text
   const options={
     method: 'POST',
     headers:{
@@ -339,26 +349,47 @@ app.post("/completions",async(req, res)=>{
       'Content-Type':'application/json'
     },
     body: JSON.stringify({
-      model:'text-davinci-003',
-      prompt:`Tell a story in 20 words about a ${mainCharacter} who lived in ${location} together with his or her friends. His or her friends are: ${friends}. The genre is ${genre}. Give all characters names and different genders. Include a life lesson and make it funny.`,
-      max_tokens: 100
+      model:'gpt-3.5-turbo',
+       messages:[
+        {"role": "user", "content": `Tell a funny story that has a life lesson in 10 words starting with a title. It should be about a ${mainCharacter} who lived in ${location} together with other animals. These animals are: ${friends}. The genre is ${genre}. Give all characters names.`},
+       ],
+      max_tokens: 30
     })
   }
   try{
- const response = await fetch('https://api.openai.com/v1/completions', options)
+    const response = await fetch('https://api.openai.com/v1/chat/completions', options)
     const newText = await response.json()
-  if(newText){
-  const accessToken = req.header("Authorization");
-  const user = await User.findOne({ accessToken: accessToken })
-    console.log('newText:',newText.choices[0].text, newText)
+    if(newText){
+      const accessToken = req.header("Authorization");
+      console.log(newText)
+
+      // generate image
+    const optionsImage={
+    method: 'POST',
+    headers:{
+    'Authorization': `Bearer ${API_KEY}`,
+    'Content-Type':'application/json'
+    },
+    body: JSON.stringify({
+    prompt: `A ${mainCharacter} and ${friends} in ${location} in cartoon syle.`,
+    n: 1,
+    size: "256x256"
+    })
+    }
+    const responseImage = await fetch('https://api.openai.com/v1/images/generations', optionsImage)
+    const newImage = await responseImage.json()
+
+    const user = await User.findOne({ accessToken: accessToken })
     const newGame = await new Game ({
     mainCharacter: mainCharacter,
     location: location,
     friends:friends,
     genre:genre,
-    newGeneratedText:newText.choices[0].text.trim(),
+    newGeneratedText:newText.choices[0].message.content.trim(),
     userId:user._id,
+    image:newImage.data[0].url
     }).save();
+
  res.status(200).json({
       success:true,
       response:{
@@ -367,7 +398,9 @@ app.post("/completions",async(req, res)=>{
         friends:newGame.friends,
         storyId: newGame._id,
         userId:newGame.userId,
-        newGeneratedText:newText.choices[0].text.trim()
+        newGeneratedText:newText.choices[0].message.content.trim(),
+        createdAt:Date.now(),
+        image:newGame.image
       }
     })
         }
