@@ -97,11 +97,15 @@ userId:{
   type:String
 },
 image:{
-  type:String
+  type:String,
+  default:'https://placehold.co/200'
 },
 createdAt:{
   type:Date,
   default:Date.now()
+ },
+ title:{
+  type:String
  }
 });
 
@@ -351,7 +355,7 @@ app.post("/completions",async(req, res)=>{
     body: JSON.stringify({
       model:'gpt-3.5-turbo',
        messages:[
-        {"role": "user", "content": `Tell a funny story that has a life lesson in 10 words starting with a title. It should be about a ${mainCharacter} who lived in ${location} together with other animals. These animals are: ${friends}. The genre is ${genre}. Give all characters names.`},
+        {"role": "user", "content": `Tell a funny story in 10 words that has a life lesson and starts with a title. It should be about a ${mainCharacter} who lived in ${location} together with ${friends}. The genre is ${genre}. Give all characters names.`},
        ],
       max_tokens: 30
     })
@@ -361,23 +365,27 @@ app.post("/completions",async(req, res)=>{
     const newText = await response.json()
     if(newText){
       const accessToken = req.header("Authorization");
-      console.log(newText)
 
-      // generate image
-    const optionsImage={
-    method: 'POST',
-    headers:{
-    'Authorization': `Bearer ${API_KEY}`,
-    'Content-Type':'application/json'
-    },
-    body: JSON.stringify({
-    prompt: `A ${mainCharacter} and ${friends} in ${location} in cartoon syle.`,
-    n: 1,
-    size: "256x256"
-    })
-    }
-    const responseImage = await fetch('https://api.openai.com/v1/images/generations', optionsImage)
-    const newImage = await responseImage.json()
+      // 3/0: to be commented back to generate image:
+    // const optionsImage={
+    // method: 'POST',
+    // headers:{
+    // 'Authorization': `Bearer ${API_KEY}`,
+    // 'Content-Type':'application/json'
+    // },
+    // body: JSON.stringify({
+    // prompt: `A ${mainCharacter} and ${friends} in ${location} in cartoon syle.`,
+    // n: 1,
+    // size: "256x256",
+    // // response_format: "b64_json"
+    // })
+    // }
+    // 3/1: to be commented back to generate image:
+    // const responseImage = await fetch('https://api.openai.com/v1/images/generations', optionsImage)
+    // const newImage = await responseImage.json()
+
+      const trimmedText = newText.choices[0].message.content.trim()
+      const newlineIndex = trimmedText.indexOf("\n")
 
     const user = await User.findOne({ accessToken: accessToken })
     const newGame = await new Game ({
@@ -385,9 +393,11 @@ app.post("/completions",async(req, res)=>{
     location: location,
     friends:friends,
     genre:genre,
-    newGeneratedText:newText.choices[0].message.content.trim(),
+    title:trimmedText.substring(0, newlineIndex).trim(),
+    newGeneratedText:trimmedText.substring(newlineIndex + 1).trim(),
     userId:user._id,
-    image:newImage.data[0].url
+    // 3/2: to be commented back to generate image:
+    // image:newImage.data[0].url
     }).save();
 
  res.status(200).json({
@@ -398,9 +408,11 @@ app.post("/completions",async(req, res)=>{
         friends:newGame.friends,
         storyId: newGame._id,
         userId:newGame.userId,
-        newGeneratedText:newText.choices[0].message.content.trim(),
+        newGeneratedText:newGame.newGeneratedText,
+        title:newGame.title,
         createdAt:Date.now(),
-        image:newGame.image
+        // 3/3: to be commented back to generate image:
+        // image:newGame.image
       }
     })
         }
@@ -408,6 +420,29 @@ app.post("/completions",async(req, res)=>{
     console.error(error)
   }
 })
+//Get all games data
+app.get("/completion",authenticateUser);
+app.get("/completion", async (req, res) => {
+  try {
+    const games = await Game.find({},)
+
+    const gamesData = games.map((game) => ({
+      generatedtext: game.newGeneratedText,
+      title:game.title,
+      mainCharacter:game.mainCharacter,
+      location: game.location,
+      friends: game.friends,
+      genre:game.genre,
+      userId: game.userId,
+      image: game.image,
+      createdAt:game.createdAt,
+      storyId: game._id,
+    }));
+    res.status(200).json({ success: true, response: gamesData });
+  } catch (error) {
+    res.status(500).json({ success: false, response: "Internal server error." });
+  }
+});
 
 //Delete user account
 app.delete("/user",authenticateUser);
@@ -426,7 +461,6 @@ app.delete("/user", async (req, res) => {
     res.status(500).json({ success: false, response: error });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
