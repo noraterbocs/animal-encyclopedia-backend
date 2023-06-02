@@ -359,7 +359,7 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-//Generating story by OPEN AI:
+//Generating a story:
 app.post("/completions",authenticateUser);
 app.post("/completions",async(req, res)=>{
     const { mainCharacter, location, friends, genre } = req.body;
@@ -438,14 +438,14 @@ app.post("/completions",async(req, res)=>{
     console.error(error)
   }
 })
-//Get all games data
+//Get all generated stories
 app.get("/completion",authenticateUser);
 app.get("/completion", async (req, res) => {
   try {
     const games = await Game.find({},)
-
+    .sort({ createdAt: -1 })
     const gamesData = games.map((game) => ({
-      generatedtext: game.newGeneratedText,
+      newGeneratedtext: game.newGeneratedText,
       title:game.title,
       mainCharacter:game.mainCharacter,
       location: game.location,
