@@ -341,6 +341,24 @@ const updateFields = {};
   }
 });
 
+//Delete user account
+app.delete("/user",authenticateUser);
+app.delete("/user", async (req, res) => {
+ try {
+    const accessToken = req.header("Authorization");
+    const deletedUser = await User.deleteOne(
+      { accessToken: accessToken },
+    );
+    if (deletedUser) {
+      res.status(200).json({ success: true, response: 'Your account was successfully deleted!' });
+    } else {
+      res.status(404).json({ success: false, response: "User not found." });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, response: error });
+  }
+});
+
 //Generating story by OPEN AI:
 app.post("/completions",authenticateUser);
 app.post("/completions",async(req, res)=>{
@@ -355,7 +373,7 @@ app.post("/completions",async(req, res)=>{
     body: JSON.stringify({
       model:'gpt-3.5-turbo',
        messages:[
-        {"role": "user", "content": `Tell a funny story in 10 words that has a life lesson and starts with a title. It should be about a ${mainCharacter} who lived in ${location} together with ${friends}. The genre is ${genre}. Give all characters names.`},
+        {"role": "user", "content": `Tell a funny kids story in 10 words that has a life lesson and starts with a title. It should be about a ${mainCharacter} who lived in ${location} together with ${friends}. The genre is ${genre}. Give all characters names.`},
        ],
       max_tokens: 30
     })
@@ -374,7 +392,7 @@ app.post("/completions",async(req, res)=>{
     // 'Content-Type':'application/json'
     // },
     // body: JSON.stringify({
-    // prompt: `A ${mainCharacter} and ${friends} in ${location} in cartoon syle.`,
+    // prompt: `A ${mainCharacter} and ${friends} in ${location} in cartoon style.`,
     // n: 1,
     // size: "256x256",
     // // response_format: "b64_json"
@@ -441,24 +459,6 @@ app.get("/completion", async (req, res) => {
     res.status(200).json({ success: true, response: gamesData });
   } catch (error) {
     res.status(500).json({ success: false, response: "Internal server error." });
-  }
-});
-
-//Delete user account
-app.delete("/user",authenticateUser);
-app.delete("/user", async (req, res) => {
- try {
-    const accessToken = req.header("Authorization");
-    const deletedUser = await User.deleteOne(
-      { accessToken: accessToken },
-    );
-    if (deletedUser) {
-      res.status(200).json({ success: true, response: 'Your account was successfully deleted!' });
-    } else {
-      res.status(404).json({ success: false, response: "User not found." });
-    }
-  } catch (error) {
-    res.status(500).json({ success: false, response: error });
   }
 });
 
