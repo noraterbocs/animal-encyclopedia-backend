@@ -96,6 +96,12 @@ genre:{
 userId:{
   type:String
 },
+userAvatar:{
+  type:String
+},
+username:{
+  type:String
+},
 image:{
   type:String,
   default:'https://placehold.co/200'
@@ -373,7 +379,10 @@ app.post("/completions",async(req, res)=>{
     body: JSON.stringify({
       model:'gpt-3.5-turbo',
        messages:[
-        {"role": "user", "content": `Tell a funny kids story in 10 words that has a life lesson and starts with a title. It should be about a ${mainCharacter} who lived in ${location} together with ${friends}. The genre is ${genre}. Give all characters names.`},
+        {"role": "user", "content": `Tell a funny kids story in 10 words that has a life lesson and starts with a title.
+        It should be about a ${mainCharacter} who lived in ${location} together with ${friends}.
+        The genre is ${genre}.
+        Give all characters names.`},
        ],
       max_tokens: 30
     })
@@ -414,26 +423,13 @@ app.post("/completions",async(req, res)=>{
     title:trimmedText.substring(0, newlineIndex).trim(),
     newGeneratedText:trimmedText.substring(newlineIndex + 1).trim(),
     userId:user._id,
+    userAvatar:user.avatar,
+    username:user.username
     // 3/2: to be commented back to generate image:
     // image:newImage.data[0].url
     }).save();
 
- res.status(200).json({
-      success:true,
-      response:{
-        mainCharacter: newGame.mainCharacter,
-        location: newGame.location,
-        friends:newGame.friends,
-        storyId: newGame._id,
-        userId:newGame.userId,
-        newGeneratedText:newGame.newGeneratedText,
-        title:newGame.title,
-        createdAt:Date.now(),
-        // 3/3: to be commented back to generate image:
-        // image:newGame.image
-      }
-    })
-        }
+ res.status(200).json({success:true, response:newGame})}
   }catch(error){
     console.error(error)
   }
@@ -444,19 +440,7 @@ app.get("/completion", async (req, res) => {
   try {
     const games = await Game.find({},)
     .sort({ createdAt: -1 })
-    const gamesData = games.map((game) => ({
-      newGeneratedtext: game.newGeneratedText,
-      title:game.title,
-      mainCharacter:game.mainCharacter,
-      location: game.location,
-      friends: game.friends,
-      genre:game.genre,
-      userId: game.userId,
-      image: game.image,
-      createdAt:game.createdAt,
-      storyId: game._id,
-    }));
-    res.status(200).json({ success: true, response: gamesData });
+    res.status(200).json({ success: true, response: games });
   } catch (error) {
     res.status(500).json({ success: false, response: "Internal server error." });
   }
