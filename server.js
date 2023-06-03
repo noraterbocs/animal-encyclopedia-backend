@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import validator from 'validator';
 require('dotenv').config()
 
+
 const mongoUrl = process.env.MONGO_URL || "mongodb://localhost/final-project";
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.Promise = Promise;
@@ -108,7 +109,7 @@ image:{
 },
 createdAt:{
   type:Date,
-  default:Date.now()
+  default:Date.now
  },
  title:{
   type:String
@@ -441,6 +442,25 @@ app.get("/completion", async (req, res) => {
     const games = await Game.find({},)
     .sort({ createdAt: -1 })
     res.status(200).json({ success: true, response: games });
+  } catch (error) {
+    res.status(500).json({ success: false, response: "Internal server error." });
+  }
+});
+
+//Get all generated stories
+app.get("/completion/lastgeneratedstory",authenticateUser);
+app.get("/completion/lastgeneratedstory", async (req, res) => {
+  const accessToken = req.header("Authorization");
+   const user = await User.findOne({ accessToken: accessToken })
+   console.log(user)
+  try {
+    if (user) {
+      const lastGeneratedStory = await Game.find({ userId: user._id.toString() }).sort({ createdAt: -1 }).limit(1)
+      console.log(lastGeneratedStory)
+      res.status(200).json({ success: true, response: lastGeneratedStory[0].createdAt });
+    } else {
+      res.status(401).json({ success: false, response: "User not found." });
+    }
   } catch (error) {
     res.status(500).json({ success: false, response: "Internal server error." });
   }
