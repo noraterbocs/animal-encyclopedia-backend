@@ -19,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 const listEndpoints = require('express-list-endpoints');
 const API_KEY = process.env.API_KEY
+const API_KEY_IMG = process.env.API_KEY_IMG
 
 // Routes
 app.get("/", (req, res) => {
@@ -402,27 +403,23 @@ app.post("/completions",async(req, res)=>{
   try{
     const response = await fetch('https://api.openai.com/v1/chat/completions', options)
     const newText = await response.json()
-    if(newText){
+
       const accessToken = req.header("Authorization");
 
-      // 3/0: to be commented back to generate image:
-    // const optionsImage={
-    // method: 'POST',
-    // headers:{
-    // 'Authorization': `Bearer ${API_KEY}`,
-    // 'Content-Type':'application/json'
-    // },
-    // body: JSON.stringify({
-    // prompt: `A ${mainCharacter} and ${friends} in ${location} in cartoon style.`,
-    // n: 1,
-    // size: "256x256",
-    // // response_format: "b64_json"
-    // })
-    // }
-    // 3/1: to be commented back to generate image:
-    // const responseImage = await fetch('https://api.openai.com/v1/images/generations', optionsImage)
-    // const newImage = await responseImage.json()
+// GET images
 
+    const optionsImage={
+    method: 'GET',
+    headers:{
+    'Authorization': `Client-ID ${API_KEY_IMG}`,
+    'Content-Type':'application/json'
+    }
+    }
+
+    const responseImage = await fetch(`https://api.unsplash.com/photos/random?query=${mainCharacter}&orientation=squarish`, optionsImage)
+    const newImage = await responseImage.json()
+    console.log(newImage)
+    if(newText && newImage){
       const trimmedText = newText.choices[0].message.content.trim()
       const newlineIndex = trimmedText.indexOf("\n")
 
@@ -436,12 +433,17 @@ app.post("/completions",async(req, res)=>{
     newGeneratedText:trimmedText.substring(newlineIndex + 1).trim(),
     userId:user._id,
     userAvatar:user.avatar,
-    username:user.username
-    // 3/2: to be commented back to generate image:
-    // image:newImage.data[0].url
+    username:user.username,
+    image:newImage.urls.small
     }).save();
 
  res.status(200).json({success:true, response:newGame})}
+ else{
+   res.status(400).json({
+        success: false,
+        response: 'The text generation or getting the images have failed.',
+      });
+ }
   }catch(error){
     console.error(error)
   }
