@@ -116,6 +116,7 @@ createdAt:{
  }
 });
 
+//Modify this based on the json that gets uploaded to Mongo
 const animalSchema = new mongoose.Schema({
 animalText:{
   type:String
@@ -480,7 +481,7 @@ app.get("/completion/lastgeneratedstory", async (req, res) => {
 app.get("/animals", async (req, res) => {
   try {
     const animals = await Animal.find({})
-
+//Modify this based on the json that gets uploaded to Mongo:
     const animalsData = animals.map((animal) => ({
       animalText: animal.animalText,
       animalName: animal.animalName
