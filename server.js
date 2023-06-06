@@ -116,8 +116,18 @@ createdAt:{
  }
 });
 
+const animalSchema = new mongoose.Schema({
+animalText:{
+  type:String
+},
+animalName:{
+  type:String
+}
+});
+
 const User = mongoose.model("User", userSchema);
 const Game = mongoose.model("Game", gameSchema);
+const Animal = mongoose.model("Animal", animalSchema);
 
 // register user and login requests
 app.post("/register", async (req, res) => {
@@ -461,6 +471,21 @@ app.get("/completion/lastgeneratedstory", async (req, res) => {
     } else {
       res.status(401).json({ success: false, response: "User not found." });
     }
+  } catch (error) {
+    res.status(500).json({ success: false, response: "Internal server error." });
+  }
+});
+
+// GET animal descriptions
+app.get("/animals", async (req, res) => {
+  try {
+    const animals = await Animal.find({})
+
+    const animalsData = animals.map((animal) => ({
+      animalText: animal.animalText,
+      animalName: animal.animalName
+    }));
+    res.status(200).json({ success: true, response: animalsData });
   } catch (error) {
     res.status(500).json({ success: false, response: "Internal server error." });
   }
