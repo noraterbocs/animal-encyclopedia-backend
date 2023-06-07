@@ -119,10 +119,22 @@ createdAt:{
 
 //Modify this based on the json that gets uploaded to Mongo
 const animalSchema = new mongoose.Schema({
-animalText:{
+animalName:{
   type:String
 },
-animalName:{
+animalIntroduction:{
+  type:String
+},
+animalIntroduction:{
+  type:String
+},
+animalDiet:{
+  type:String
+},
+animalReproduction:{
+  type:String
+},
+animalFacts:{
   type:String
 }
 });
