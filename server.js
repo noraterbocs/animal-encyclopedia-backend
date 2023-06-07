@@ -66,7 +66,7 @@ const userSchema = new mongoose.Schema({
   } ,
   badges:{
     type:Array,
-    default:['/images/firstBadge.png']
+    default:['explorerBadge']
   },
   history:{
     type:Array,
