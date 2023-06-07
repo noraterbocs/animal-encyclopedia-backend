@@ -497,7 +497,7 @@ app.get("/animals", async (req, res) => {
       animalText: animal.animalText,
       animalName: animal.animalName
     }));
-    res.status(200).json({ success: true, response: animalsData });
+    res.status(200).json({ success: true, response: animals });
   } catch (error) {
     res.status(500).json({ success: false, response: "Internal server error." });
   }
