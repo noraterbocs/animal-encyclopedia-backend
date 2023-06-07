@@ -125,9 +125,6 @@ animalName:{
 animalIntroduction:{
   type:String
 },
-animalIntroduction:{
-  type:String
-},
 animalDiet:{
   type:String
 },
