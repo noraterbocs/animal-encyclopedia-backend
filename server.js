@@ -349,6 +349,12 @@ const updateFields = {};
       }
       updateFields.$set= { avatar: avatar }
   }
+  if(totalScore){
+    if (!updateFields.$set) {
+       updateFields.$set = {};
+     }
+     updateFields.$set= { totalScore: totalScore }
+ }
     if(username){
        if (!updateFields.$set) {
         updateFields.$set = {};
