@@ -326,7 +326,7 @@ app.patch("/user",authenticateUser);
 app.patch("/user", async (req, res) => {
 const salt = bcrypt.genSaltSync();
  try {
-const {badges, avatar, history, username, password } = req.body;
+const {badges, avatar, history, username, password, totalScore } = req.body;
     const accessToken = req.header("Authorization");
 
 const updateFields = {};
@@ -351,7 +351,7 @@ const updateFields = {};
   }
   if(totalScore){
     if (!updateFields.$set) {
-       updateFields.$set = {};
+       updateFields.$set = { totalScore: totalScore };
      }
      updateFields.$set= { totalScore: totalScore }
  }
