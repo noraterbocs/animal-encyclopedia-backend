@@ -62,21 +62,17 @@ const userSchema = new mongoose.Schema({
   },
   avatar:{
     type:String,
-    default:"/images/badges/Explorer.png"
-  } ,
-  badges:[{
-    title: {
-      type:String,
-    },
-    description: {
-      type: String,
-    }
-  }],
-  default:[{
+    default:'/images/avatars/AlligatorAvatar.png'
+  },
+  badges:{
+    type:Array,
+    default:[{
+    id:1,
     title: 'explorer',
+    path:'/images/badges/Explorer.png',
     description: 'Congratulations! You have earned the Explorer badge! As an explorer, you have taken your first steps into the exciting world of animals. You have shown curiosity and a keen interest in learning about different species. Keep exploring and discovering fascinating facts about animals from all around the world.'
-  }], 
-  
+  }]
+},
   history:{
     type:Array,
     default:[
