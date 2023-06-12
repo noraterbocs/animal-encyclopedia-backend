@@ -62,7 +62,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar:{
     type:String,
-    default:"/images/defaultAvatar.png"
+    default:"/images/badges/Explorer.png"
   } ,
   badges:[{
     title: {
