@@ -138,6 +138,15 @@ animalReproduction:{
 },
 animalFacts:{
   type:String
+},
+imageURL1:{
+  type:String
+},
+imageURL2:{
+  type:String
+},
+imageURL3:{
+  type:String
 }
 });
 
