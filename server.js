@@ -147,6 +147,9 @@ imageURL2:{
 },
 imageURL3:{
   type:String
+},
+animalId:{
+  type:String
 }
 });
 
@@ -509,12 +512,11 @@ app.get("/completion/lastgeneratedstory", async (req, res) => {
 });
 
 // GET animal descriptions
-app.get("/animals", async (req, res) => {
+app.get("/animals/:animalId", async (req, res) => {
   try {
-    const { animalName } = req.query;
-    const nameRegEx = new RegExp (animalName);
-    const animal = await Animal.findOne({animalName: nameRegEx});
-//Modify this based on the json that gets uploaded to Mongo:
+    const { animalId } = req.params;
+    const idRegEx = new RegExp (animalId);
+    const animal = await Animal.findOne({animalId: idRegEx});
     
     res.status(200).json({ success: true, response: animal });
   } catch (error) {
