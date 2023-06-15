@@ -424,12 +424,12 @@ app.post("/completions",async(req, res)=>{
     body: JSON.stringify({
       model:'gpt-3.5-turbo',
        messages:[
-        {"role": "user", "content": `Tell a funny kids story in 10 words that has a life lesson and starts with a title.
+        {"role": "user", "content": `Tell a funny kids story in 150 words that has a life lesson and starts with a title.
         It should be about a ${mainCharacter} who lived in ${location} together with ${friends}.
         The genre is ${genre}.
         Give all characters names.`},
        ],
-      max_tokens: 200
+      max_tokens: 250
     })
   }
   try{
