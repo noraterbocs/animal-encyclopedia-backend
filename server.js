@@ -429,7 +429,7 @@ app.post("/completions",async(req, res)=>{
         The genre is ${genre}.
         Give all characters names.`},
        ],
-      max_tokens: 30
+      max_tokens: 200
     })
   }
   try{
