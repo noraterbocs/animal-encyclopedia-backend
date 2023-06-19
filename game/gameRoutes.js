@@ -5,8 +5,8 @@ import getLastGeneratedStory from './getLastGenereatedStory';
 
 const router = express.Router();
 
-router.use('/completions', generateStory);
-router.use('/completion', getAllStories);
-router.use('/completion/lastgeneratedstory', getLastGeneratedStory);
+router.use('/', generateStory);
+router.use('/', getAllStories);
+router.use('/', getLastGeneratedStory);
 
 export default router;

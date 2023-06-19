@@ -3,6 +3,6 @@ import getAnimalSummary from './getAnimalSummary';
 
 const router = express.Router();
 
-router.use('/animals/:animalId', getAnimalSummary);
+router.use('/', getAnimalSummary);
 
 export default router;

@@ -8,9 +8,9 @@ import registerUser from './registerUser';
 
 const router = express.Router();
 
-router.use('/register', registerUser);
-router.use('/login', loginUser);
-router.use('/user', getSingleUser, deleteUser, changeSingleUserData);
-router.use('/users', getAllUsers);
+router.use('/', registerUser);
+router.use('/', loginUser);
+router.use('/', getSingleUser, deleteUser, changeSingleUserData);
+router.use('/', getAllUsers);
 
 export default router;
